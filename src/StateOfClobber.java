@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -67,24 +69,43 @@ public class StateOfClobber {
         return currentCode == WHITE ? BLACK : WHITE;
     }
 
-    public boolean canPieceMove(int rowIndex, int colIndex, int opposingCode) {
-        if (rowIndex > 0 && board[rowIndex-1][colIndex] == opposingCode) {
-            return true;
-        }
-        if (rowIndex < board.length - 1 && board[rowIndex+1][colIndex] == opposingCode) {
-            return true;
-        }
-        if (colIndex > 0 && board[rowIndex][colIndex-1] == opposingCode) {
-            return true;
-        }
+    private void checkForEmpty(int rowIndex, int colIndex) {
+        if (board[rowIndex][colIndex] == EMPTY)
+            throw new RuntimeException("Empty field cannot be moved");
+    }
+
+    public boolean canPieceMoveUp(int rowIndex, int colIndex, int opposingCode) {
+        checkForEmpty(rowIndex, colIndex);
+        return rowIndex > 0 && board[rowIndex-1][colIndex] == opposingCode;
+    }
+
+    public boolean canPieceMoveDown(int rowIndex, int colIndex, int opposingCode) {
+        checkForEmpty(rowIndex, colIndex);
+        return rowIndex < board.length - 1 && board[rowIndex+1][colIndex] == opposingCode;
+    }
+
+    public boolean canPieceMoveLeft(int rowIndex, int colIndex, int opposingCode) {
+        checkForEmpty(rowIndex, colIndex);
+        return colIndex > 0 && board[rowIndex][colIndex-1] == opposingCode;
+    }
+
+    public boolean canPieceMoveRight(int rowIndex, int colIndex, int opposingCode) {
+        checkForEmpty(rowIndex, colIndex);
         return colIndex < board[0].length - 1 && board[rowIndex][colIndex + 1] == opposingCode;
     }
 
-    public boolean canPieceMove(int rowIndex, int colIndex) {
+    public boolean hasPieceAnyMove(int rowIndex, int colIndex, int opposingCode) {
+        return canPieceMoveRight(rowIndex, colIndex, opposingCode)
+                || canPieceMoveLeft(rowIndex, colIndex, opposingCode)
+                || canPieceMoveDown(rowIndex, colIndex, opposingCode)
+                || canPieceMoveUp(rowIndex, colIndex, opposingCode);
+    }
+
+    public boolean hasPieceAnyMove(int rowIndex, int colIndex) {
         int pieceCode = board[rowIndex][colIndex];
         if (pieceCode == EMPTY)
             throw new RuntimeException("Field is empty");
-        return canPieceMove(rowIndex, colIndex, getOpposingCode(pieceCode));
+        return hasPieceAnyMove(rowIndex, colIndex, getOpposingCode(pieceCode));
     }
 
     public int whatIsGameState(int currentTurn) {
@@ -95,12 +116,57 @@ public class StateOfClobber {
                 .anyMatch(i->
                         IntStream.range(0,board[i].length)
                                 .anyMatch(j->
-                                        board[i][j] == currentTurn && canPieceMove(i, j, getOpposingCode(currentTurn))
+                                        board[i][j] == currentTurn && hasPieceAnyMove(i, j, getOpposingCode(currentTurn))
                                 )
                 );
         if (shouldContinue)
             return CONTINUE;
         else
             return currentTurn == WHITE ? WIN_BLACK : WIN_WHITE;
+    }
+
+    public StateOfClobber generateUncheckedStateWithMove(int playerCode, int currentRow, int currentCol, int nextRow, int nextCol) {
+        StateOfClobber nextState = copy();
+        nextState.board[currentRow][currentCol] = EMPTY;
+        nextState.board[nextRow][nextCol] = playerCode;
+        return nextState;
+    }
+
+    private void addPossiblePlayerMoves(int i, int j, List<StateOfClobber> nextStates, int playerToMove, int opposingCode) {
+        if (board[i][j] == playerToMove) {
+            if (canPieceMoveRight(i, j, opposingCode)) {
+                nextStates.add(
+                        generateUncheckedStateWithMove(playerToMove, i, j, i, j + 1)
+                );
+            }
+            if (canPieceMoveLeft(i, j, opposingCode)) {
+                nextStates.add(
+                        generateUncheckedStateWithMove(playerToMove, i, j, i, j - 1)
+                );
+            }
+            if (canPieceMoveUp(i, j, opposingCode)) {
+                nextStates.add(
+                        generateUncheckedStateWithMove(playerToMove, i, j, i - 1, j)
+                );
+            }
+            if (canPieceMoveDown(i, j, opposingCode)) {
+                nextStates.add(
+                        generateUncheckedStateWithMove(playerToMove, i, j, i + 1, j)
+                );
+            }
+        }
+    }
+
+    public List<StateOfClobber> generatePossibleStates(int playerToMove) {
+        List<StateOfClobber> nextStates = new ArrayList<>();
+        final int opposingCode = getOpposingCode(playerToMove);
+
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                addPossiblePlayerMoves(i, j, nextStates, playerToMove, opposingCode);
+            }
+        }
+
+        return nextStates;
     }
 }
