@@ -89,6 +89,7 @@ public class Main {
     }
 
 
+
     public static void testPiecesCountHeuristic() {
         StateOfClobber st1 = new StateOfClobber(3, 4);
         st1 = st1.generateUncheckedStateWithMove(2, 1, 2 , 0);
@@ -121,6 +122,40 @@ public class Main {
         System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
     }
 
+    public static void testComplexHeuristic() {
+        StateOfClobber st1 = performMoveSequence2();
+
+        System.out.println("Ability");
+        Evaluator heuristic = new PieceMoveAbilityHeuristic();
+        System.out.println(heuristic.assessState(st1, StateOfClobber.BLACK));
+        System.out.println(heuristic.assessState(st1, StateOfClobber.WHITE));
+
+        System.out.println("Isolation");
+        heuristic = new IsolationAdvantageHeuristic();
+        System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
+        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+
+        System.out.println("Doubling");
+        heuristic = new DoublingPositionHeuristic();
+        System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
+        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+
+        System.out.println("Centrality");
+        heuristic = new CentralityHeuristic();
+        System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
+        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+
+        System.out.println("Complex");
+        heuristic = new TunableComplexHeuristic(
+                10,
+                1,
+                2,
+                0.1
+        );
+        System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
+        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+    }
+
     public static void main(String[] args) {
 //        StateComponents.StateOfClobber st1 = new StateComponents.StateOfClobber(5,6);
 //        StateComponents.StateOfClobber st2 = st1.copy();
@@ -139,6 +174,7 @@ public class Main {
 //        testPiecesCountHeuristic();
 //        testIsolationAdvantageHeuristic();
 //        testDoublingHeuristic();
-        testCentralityHeuristic();
+//        testCentralityHeuristic();
+        testComplexHeuristic();
     }
 }
