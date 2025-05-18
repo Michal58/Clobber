@@ -1,3 +1,5 @@
+package StateComponents;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,24 +110,69 @@ public class StateOfClobber {
         return hasPieceAnyMove(rowIndex, colIndex, getOpposingCode(pieceCode));
     }
 
-    public int whatIsGameState(int currentTurn) {
-        if (currentTurn != WHITE && currentTurn != BLACK)
+//    private final List<TriPredicate<Integer,Integer,Integer>> ALL_MOVES_PREDICATES = List.of(
+//            this::canPieceMoveRight,
+//            this::canPieceMoveLeft,
+//            this::canPieceMoveDown,
+//            this::canPieceMoveUp
+//    );
+
+    public boolean isThereRightPieceTake(int rowPos, int colPos, int colorToTake) {
+        return canPieceMoveRight(rowPos, colPos, colorToTake) && board[rowPos][colPos + 1] == colorToTake;
+    }
+
+    public boolean isThereLeftPieceTake(int rowPos, int colPos, int colorToTake) {
+        return canPieceMoveLeft(rowPos, colPos, colorToTake) && board[rowPos][colPos - 1] == colorToTake;
+    }
+
+    public boolean isThereDownPieceTake(int rowPos, int colPos, int colorToTake) {
+        return canPieceMoveDown(rowPos, colPos, colorToTake) && board[rowPos + 1][colPos] == colorToTake;
+    }
+
+    public boolean isThereUpPieceTake(int rowPos, int colPos, int colorToTake) {
+        return canPieceMoveUp(rowPos, colPos, colorToTake) && board[rowPos - 1][colPos] == colorToTake;
+    }
+
+    public int howManyTakesPieceHas(int rowPos, int colPos) {
+        if (board[rowPos][colPos] == EMPTY)
+            throw new RuntimeException("Field is empty");
+        int opposingCode = getOpposingCode(board[rowPos][colPos]);
+        int takesCount = 0;
+        if (isThereRightPieceTake(rowPos, colPos, opposingCode)) {
+            takesCount++;
+        }
+        if (isThereLeftPieceTake(rowPos, colPos, opposingCode)) {
+            takesCount++;
+        }
+        if (isThereDownPieceTake(rowPos, colPos, opposingCode)) {
+            takesCount++;
+        }
+        if (isThereUpPieceTake(rowPos, colPos, opposingCode)) {
+            takesCount++;
+        }
+
+        return takesCount;
+    }
+
+    public int whatIsGameState(int currentTurnColor) {
+        if (currentTurnColor != WHITE && currentTurnColor != BLACK)
             throw new RuntimeException("No valid color for player");
 
         boolean shouldContinue = IntStream.range(0, board.length)
                 .anyMatch(i->
                         IntStream.range(0,board[i].length)
                                 .anyMatch(j->
-                                        board[i][j] == currentTurn && hasPieceAnyMove(i, j, getOpposingCode(currentTurn))
+                                        board[i][j] == currentTurnColor && hasPieceAnyMove(i, j, getOpposingCode(currentTurnColor))
                                 )
                 );
         if (shouldContinue)
             return CONTINUE;
         else
-            return currentTurn == WHITE ? WIN_BLACK : WIN_WHITE;
+            return currentTurnColor == WHITE ? WIN_BLACK : WIN_WHITE;
     }
 
-    public StateOfClobber generateUncheckedStateWithMove(int playerCode, int currentRow, int currentCol, int nextRow, int nextCol) {
+    public StateOfClobber generateUncheckedStateWithMove(int currentRow, int currentCol, int nextRow, int nextCol) {
+        int playerCode = board[currentRow][currentCol];
         StateOfClobber nextState = copy();
         nextState.board[currentRow][currentCol] = EMPTY;
         nextState.board[nextRow][nextCol] = playerCode;
@@ -136,22 +183,22 @@ public class StateOfClobber {
         if (board[i][j] == playerToMove) {
             if (canPieceMoveRight(i, j, opposingCode)) {
                 nextStates.add(
-                        generateUncheckedStateWithMove(playerToMove, i, j, i, j + 1)
+                        generateUncheckedStateWithMove(i, j, i, j + 1)
                 );
             }
             if (canPieceMoveLeft(i, j, opposingCode)) {
                 nextStates.add(
-                        generateUncheckedStateWithMove(playerToMove, i, j, i, j - 1)
+                        generateUncheckedStateWithMove(i, j, i, j - 1)
                 );
             }
             if (canPieceMoveUp(i, j, opposingCode)) {
                 nextStates.add(
-                        generateUncheckedStateWithMove(playerToMove, i, j, i - 1, j)
+                        generateUncheckedStateWithMove(i, j, i - 1, j)
                 );
             }
             if (canPieceMoveDown(i, j, opposingCode)) {
                 nextStates.add(
-                        generateUncheckedStateWithMove(playerToMove, i, j, i + 1, j)
+                        generateUncheckedStateWithMove(i, j, i + 1, j)
                 );
             }
         }
@@ -168,5 +215,43 @@ public class StateOfClobber {
         }
 
         return nextStates;
+    }
+
+    public int[][] getBoard() {
+        return board;
+    }
+
+    public int getHeight() {
+        return board.length;
+    }
+
+    public int getWidth() {
+        return board[0].length;
+    }
+
+    public int getColor(int rowPos, int colPos) {
+        return board[rowPos][colPos];
+    }
+
+    public int getDoublingCount(int i, int j) {
+        int color = board[i][j];
+        int count = 0;
+        if (i > 0 && board[i-1][j] == color && hasPieceAnyMove(i-1,j)) {
+            count++;
+        }
+        if (i < board.length-1 && board[i+1][j] == color && hasPieceAnyMove(i+1,j)) {
+            count++;
+        }
+        if (j > 0 && board[i][j-1] == color && hasPieceAnyMove(i, j-1)){
+            count++;
+        }
+        if (j < board[0].length-1 && board[i][j+1] == color && hasPieceAnyMove(i,j+1)) {
+            count++;
+        }
+        return count;
+    }
+
+    public void clearField(int rowPos, int colPos) {
+        board[rowPos][colPos] = EMPTY;
     }
 }
