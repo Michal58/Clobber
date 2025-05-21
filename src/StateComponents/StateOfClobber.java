@@ -2,11 +2,13 @@ package StateComponents;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class StateOfClobber {
+    public static final int INVALID_COLOR = -1;
     public static final int EMPTY = 0;
     public static final int WHITE = 1;
     public static final int BLACK = 2;
@@ -204,7 +206,7 @@ public class StateOfClobber {
         }
     }
 
-    public List<StateOfClobber> generatePossibleStates(int playerToMove) {
+    public List<StateOfClobber> generateAllPossibleStates(int playerToMove) {
         List<StateOfClobber> nextStates = new ArrayList<>();
         final int opposingCode = getOpposingCode(playerToMove);
 
@@ -215,6 +217,56 @@ public class StateOfClobber {
         }
 
         return nextStates;
+    }
+
+    public Iterator<StateOfClobber> getStatesGenerator(int colorToMove) {
+        return new Iterator<>() {
+            private int mainI = 0;
+            private int mainJ = 0;
+            private int mainK = 0;
+            private final int[][] DIFF = {
+                    {0,1},
+                    {0,-1},
+                    {-1,0},
+                    {1,0}
+            };
+            private StateOfClobber nextToReturn = findNext();
+            @Override
+            public boolean hasNext() {
+                return nextToReturn != null;
+            }
+
+            private StateOfClobber findNext() {
+                for (int i = mainI; i < board.length; i++) {
+                    for (int j = mainJ; j < board[i].length; j++) {
+                        if (board[i][j] == colorToMove) {
+                            for (int k = mainK; k < DIFF.length; k++) {
+                                int targetRow = i + DIFF[k][0];
+                                int targetCol = j + DIFF[k][1];
+                                if (targetRow >= 0 && targetRow < board.length && targetCol >= 0 && targetCol < board[i].length) {
+                                    mainI = i;
+                                    mainJ = j;
+                                    mainK = k + 1;
+                                    return copy().generateUncheckedStateWithMove(i, j, targetRow, targetCol);
+                                }
+                            }
+                        }
+                        mainK = 0;
+                    }
+                    mainJ=0;
+                }
+                return null;
+            }
+
+            @Override
+            public StateOfClobber next() {
+                if (!hasNext())
+                    throw new RuntimeException("Has not next");
+                var toReturn = nextToReturn;
+                nextToReturn = findNext();
+                return toReturn;
+            }
+        };
     }
 
     public int[][] getBoard() {
@@ -253,5 +305,12 @@ public class StateOfClobber {
 
     public void clearField(int rowPos, int colPos) {
         board[rowPos][colPos] = EMPTY;
+    }
+
+    public boolean isSameAs(StateOfClobber other) {
+        return IntStream.range(0, this.board.length)
+                .allMatch(i->
+                        Arrays.equals(this.board[i], other.board[i])
+                );
     }
 }

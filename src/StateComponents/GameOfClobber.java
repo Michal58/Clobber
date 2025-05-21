@@ -3,6 +3,8 @@ package StateComponents;
 import Players.Player;
 
 import java.awt.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class GameOfClobber {
     public static final int STD_OUT_SEP_COL_COUNT = 50;
@@ -36,6 +38,31 @@ public class GameOfClobber {
     public boolean isFinished(){
         return gameResult != StateOfClobber.CONTINUE;
     }
+
+    public void conductGame(Consumer<StateOfClobber> newStateConsumer) {
+        Player currentPlayer = this.blackPlayer;
+
+        this.blackPlayer.initializeGame(StateOfClobber.BLACK);
+        this.whitePlayer.initializeGame(StateOfClobber.WHITE);
+
+        while (!isFinished()) {
+            currentPlayer.updateWithMove(this.currentState);
+            this.currentState = currentPlayer.makeMove();
+            newStateConsumer.accept(this.currentState);
+
+            if (this.currentTurn == StateOfClobber.BLACK) {
+                currentPlayer = this.whitePlayer;
+                this.currentTurn = StateOfClobber.WHITE;
+            } else {
+                currentPlayer = this.blackPlayer;
+                this.currentTurn = StateOfClobber.BLACK;
+            }
+            this.movesCount++;
+
+            updateGameResult();
+        }
+    }
+
     public void displayFinishedGameResult(){
         System.out.println("=".repeat(STD_OUT_SEP_COL_COUNT));
         System.out.println("Game finished!");

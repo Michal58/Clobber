@@ -1,5 +1,11 @@
 import Evaluations.*;
+import Players.RandomPlayer;
+import StateComponents.GameOfClobber;
 import StateComponents.StateOfClobber;
+
+import java.awt.*;
+import java.util.List;
+import java.util.Random;
 
 public class Main {
     public static void testStates(){
@@ -129,6 +135,43 @@ public class Main {
         System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
     }
 
+    public static void testStateIterator() {
+        int[][] toCheck = {
+                {1,1},
+                {1,2},
+                {2,1},
+                {2,2},
+                {3,3},
+                {10,10},
+                {100,100},
+                {200,100},
+                {100,200}
+        };
+
+        for (int[] nAndM : toCheck) {
+            StateOfClobber st = new StateOfClobber(nAndM[0], nAndM[1]);
+            for (int color = 1; color < 3; color++) {
+                System.out.println("start base");
+                long start = System.currentTimeMillis();
+                List<StateOfClobber> baseStates = st.generateAllPossibleStates(color);
+                System.out.println((System.currentTimeMillis()-start)/1000.0);
+                System.out.println("end base");
+                start = System.currentTimeMillis();
+                var it = st.getStatesGenerator(color);
+                while (it.hasNext()) {
+                    StateOfClobber nextGenerated = it.next();
+                    if(!nextGenerated.isSameAs(baseStates.get(0)))
+                        throw new RuntimeException("Not the same");
+                    baseStates.remove(0);
+                }
+                if(!baseStates.isEmpty())
+                    throw new RuntimeException("Not empty");
+                System.out.println("Ok");
+                System.out.println((System.currentTimeMillis()-start)/1000.0);
+            }
+        }
+    }
+
     public static void testComplexHeuristic() {
         StateOfClobber st1 = performMoveSequence2();
 
@@ -164,6 +207,19 @@ public class Main {
         System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
     }
 
+
+    public static void conductRandomGame() {
+        var p1 = new RandomPlayer();
+        var p2 = new RandomPlayer();
+        GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(3,3));
+        game.conductGame(st-> {
+            System.out.println("----");
+            st.displayBoard();
+            System.out.println("----");
+        });
+        game.displayFinishedGameResult();
+    }
+
     public static void main(String[] args) {
 //        StateComponents.StateOfClobber st1 = new StateComponents.StateOfClobber(5,6);
 //        StateComponents.StateOfClobber st2 = st1.copy();
@@ -184,6 +240,8 @@ public class Main {
 //        testDoublingHeuristic();
 //        testCentralityHeuristic();
 //        testWeightedMovesCountHeuristic();
-        testComplexHeuristic();
+//        testComplexHeuristic();
+//        testStateIterator();
+        conductRandomGame();
     }
 }
