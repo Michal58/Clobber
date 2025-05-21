@@ -5,7 +5,7 @@ public class Main {
     public static void testStates(){
         StateOfClobber st1 = new StateOfClobber(5, 6);
         System.out.println("Gen first");
-        var states = st1.generatePossibleStates(StateOfClobber.WHITE);
+        var states = st1.generateAllPossibleStates(StateOfClobber.WHITE);
         states.forEach(s-> {
                     s.displayBoard();
                     System.out.println("------");
@@ -13,7 +13,7 @@ public class Main {
         );
         System.out.println(states.size());
         System.out.println("=============");
-        states = states.get(0).generatePossibleStates(StateOfClobber.BLACK);
+        states = states.get(0).generateAllPossibleStates(StateOfClobber.BLACK);
         states.forEach(s-> {
                     s.displayBoard();
                     System.out.println("------");
@@ -122,6 +122,13 @@ public class Main {
         System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
     }
 
+    public static void testWeightedMovesCountHeuristic() {
+        StateOfClobber st1 = performMoveSequence2();
+        WeightedCountOfMovesHeuristic heuristic = new WeightedCountOfMovesHeuristic();
+        System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
+        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+    }
+
     public static void testComplexHeuristic() {
         StateOfClobber st1 = performMoveSequence2();
 
@@ -150,7 +157,8 @@ public class Main {
                 10,
                 1,
                 2,
-                0.1
+                0.1,
+                0.25
         );
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
         System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
@@ -175,6 +183,7 @@ public class Main {
 //        testIsolationAdvantageHeuristic();
 //        testDoublingHeuristic();
 //        testCentralityHeuristic();
+//        testWeightedMovesCountHeuristic();
         testComplexHeuristic();
     }
 }
