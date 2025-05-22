@@ -223,7 +223,7 @@ public class Main {
     }
 
     public static void conductMinMaxGame() {
-        int depth = 4;
+        int depth = 2;
         var p1 = new TreePlayer(depth, TreePlayer.TreeType.MIN_MAX, TreePlayer.selectedStrategyAdaptation(0));
         var p2 = new TreePlayer(depth, TreePlayer.TreeType.MIN_MAX, TreePlayer.selectedStrategyAdaptation(0));
         GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
@@ -236,7 +236,7 @@ public class Main {
     }
 
     public static void conductAlphaBetaGame() {
-        int depth = 6;
+        int depth = 7;
         var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(0));
         var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(0));
         GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
@@ -246,6 +246,11 @@ public class Main {
             System.out.println("----");
         });
         game.displayFinishedGameResult();
+    }
+
+
+    public static void arrangeHeuristicComparison() {
+
     }
 
     public static void main(String[] args) {
@@ -271,7 +276,7 @@ public class Main {
 //        testComplexHeuristic();
 //        testStateIterator();
 //        conductRandomGame();
-//        conductMinMaxGame();
+        conductMinMaxGame();
         conductAlphaBetaGame();
     }
 }

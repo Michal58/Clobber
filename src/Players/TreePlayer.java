@@ -9,6 +9,7 @@ import Utils.Utils;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static StateComponents.StateOfClobber.EMPTY;
 import static StateComponents.StateOfClobber.INVALID_COLOR;
 
 public class TreePlayer implements Player{
@@ -76,7 +77,7 @@ public class TreePlayer implements Player{
 
     @Override
     public double secondsTimeOfSearching() {
-        return secondsTimeSearching / Math.pow(10,9);
+        return secondsTimeSearching;
     }
 
     @Override
@@ -103,6 +104,7 @@ public class TreePlayer implements Player{
         Utils.StopWatch stopWatch = new Utils.StopWatch();
         stopWatch.startTime();
         GameNode maxNode = game.getMaxNode(adaptedEvaluator, baseMaxDepth, onVisit);
+        System.out.println(maxNode.operationalEvaluation);
         stopWatch.stopTime();
         game.updateWithMaxNode(maxNode);
         secondsTimeSearching += stopWatch.getTimeSeconds();

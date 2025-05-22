@@ -24,8 +24,8 @@ public class TreeAlphaBeta implements GameTree{
     @Override
     public GameNode getMaxNode(Evaluator evaluator, int depth, Runnable onNodeVisit){
         return this.root.alphaBetaEvaluate(
-                -MAX_EVAL,
-                MAX_EVAL,
+                -MAX_EVAL - 1,
+                MAX_EVAL + 1,
                 evaluator,
                 depth,
                 ourPlayerColor,
