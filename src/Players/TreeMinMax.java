@@ -3,9 +3,6 @@ package Players;
 import Evaluations.Evaluator;
 import StateComponents.StateOfClobber;
 
-import java.util.Optional;
-import java.util.function.Consumer;
-
 public class TreeMinMax implements GameTree{
     private GameNode root;
     private final int ourPlayerColor;
@@ -22,7 +19,9 @@ public class TreeMinMax implements GameTree{
 
     @Override
     public GameNode getMaxNode(Evaluator evaluator, int depth, Runnable onNodeVisit){
-        return this.root.minMaxEvaluate(evaluator, depth, this.ourPlayerColor, onNodeVisit);
+        return this.root
+                .minMaxEvaluate(evaluator, depth, this.ourPlayerColor, onNodeVisit)
+                .getOperationalPredecessor();
     }
 
     @Override

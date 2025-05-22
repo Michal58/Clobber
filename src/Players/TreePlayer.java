@@ -6,6 +6,7 @@ import Evaluations.WeightedCountOfMovesHeuristic;
 import StateComponents.StateOfClobber;
 import Utils.Utils;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static StateComponents.StateOfClobber.INVALID_COLOR;
@@ -39,7 +40,7 @@ public class TreePlayer implements Player{
     private int pieceColor;
     private int baseMaxDepth;
     private GameTree game;
-    private StrategyAdaptationHeuristic heuristicAdapter;
+    private StrategyAdaptation heuristicAdapter;
     private TreeType treeType;
 
     public enum TreeType {
@@ -47,12 +48,24 @@ public class TreePlayer implements Player{
         ALPHA_BETA
     }
 
-    public TreePlayer(int baseMaxDepth, TreeType treeType){
+    public static Function<Evaluator[], StrategyAdaptation> selectedStrategyAdaptation(int index) {
+        return evaluators -> _ignored -> evaluators[index];
+    }
+
+    public static Function<Evaluator[], StrategyAdaptation> realStrategyAdaptationGetter() {
+        return _ignored -> new StrategyAdaptationHeuristic();
+    }
+
+    public TreePlayer(int baseMaxDepth, TreeType treeType, Function<Evaluator[], StrategyAdaptation> ultimateAdaptationGetter){
         this.countOfVisitedNodes = 0;
         this.secondsTimeSearching = 0;
         this.pieceColor = INVALID_COLOR;
         this.baseMaxDepth = baseMaxDepth;
-        this.heuristicAdapter = new StrategyAdaptationHeuristic();
+        this.heuristicAdapter = ultimateAdaptationGetter.apply(new Evaluator[]{
+                ONLY_WEIGHTED_MOVES_HEURISTIC,
+                BALANCED_STRATEGY,
+                END_STRATEGY
+        });
         this.treeType = treeType;
     }
 
@@ -76,7 +89,7 @@ public class TreePlayer implements Player{
         if (this.game == null)
             this.game = switch (this.treeType) {
                 case MIN_MAX -> new TreeMinMax(updatedGameState, this.pieceColor);
-                case ALPHA_BETA -> null;
+                case ALPHA_BETA -> new TreeAlphaBeta(updatedGameState, this.pieceColor);
             };
         else
             this.game.updateEnemyMove(updatedGameState);

@@ -1,5 +1,7 @@
 import Evaluations.*;
 import Players.RandomPlayer;
+import Players.StrategyAdaptationHeuristic;
+import Players.TreePlayer;
 import StateComponents.GameOfClobber;
 import StateComponents.StateOfClobber;
 
@@ -220,6 +222,32 @@ public class Main {
         game.displayFinishedGameResult();
     }
 
+    public static void conductMinMaxGame() {
+        int depth = 4;
+        var p1 = new TreePlayer(depth, TreePlayer.TreeType.MIN_MAX, TreePlayer.selectedStrategyAdaptation(0));
+        var p2 = new TreePlayer(depth, TreePlayer.TreeType.MIN_MAX, TreePlayer.selectedStrategyAdaptation(0));
+        GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
+        game.conductGame(st-> {
+            System.out.println("----");
+            st.displayBoard();
+            System.out.println("----");
+        });
+        game.displayFinishedGameResult();
+    }
+
+    public static void conductAlphaBetaGame() {
+        int depth = 6;
+        var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(0));
+        var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(0));
+        GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
+        game.conductGame(st-> {
+            System.out.println("----");
+            st.displayBoard();
+            System.out.println("----");
+        });
+        game.displayFinishedGameResult();
+    }
+
     public static void main(String[] args) {
 //        StateComponents.StateOfClobber st1 = new StateComponents.StateOfClobber(5,6);
 //        StateComponents.StateOfClobber st2 = st1.copy();
@@ -242,6 +270,8 @@ public class Main {
 //        testWeightedMovesCountHeuristic();
 //        testComplexHeuristic();
 //        testStateIterator();
-        conductRandomGame();
+//        conductRandomGame();
+//        conductMinMaxGame();
+        conductAlphaBetaGame();
     }
 }

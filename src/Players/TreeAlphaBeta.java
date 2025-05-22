@@ -30,7 +30,7 @@ public class TreeAlphaBeta implements GameTree{
                 depth,
                 ourPlayerColor,
                 onNodeVisit
-        );
+        ).getOperationalPredecessor();
     }
 
     @Override

@@ -6,7 +6,7 @@ import StateComponents.StateOfClobber;
 
 import java.util.stream.IntStream;
 
-public class StrategyAdaptationHeuristic {
+public class StrategyAdaptationHeuristic implements StrategyAdaptation {
 
     public static final double[][] BASE_WEIGHTS = {
             {5, 5},
@@ -88,6 +88,7 @@ public class StrategyAdaptationHeuristic {
         };
     }
 
+    @Override
     public Evaluator getAdaptedHeuristic(StateOfClobber currentState) {
         double[][] adaptationHeuristicWeights = new double[2][];
 
@@ -98,7 +99,7 @@ public class StrategyAdaptationHeuristic {
         adaptationHeuristicWeights[0] = adaptationHeuristics[0].evaluate(currentState);
         adaptationHeuristicWeights[1] = adaptationHeuristics[1].evaluate(currentState);
 
-        Double[] ultimateWeights = IntStream.range(0, adaptationHeuristicWeights.length)
+        Double[] ultimateWeights = IntStream.range(0, BASE_WEIGHTS.length)
                 .boxed()
                 .map(i->
                         (adaptationMetaWeights[0] * adaptationHeuristicWeights[0][i] + adaptationMetaWeights[1] * adaptationHeuristicWeights[1][i]) /

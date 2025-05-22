@@ -25,6 +25,7 @@ public class GameNode {
     int currentColorToMove;
     int finishState;
     private double operationalEvaluation;
+    private GameNode operationalPredecessor;
 
 
     public GameNode(StateOfClobber baseState, int currentColorToMove, NodeType nodeType) {
@@ -56,41 +57,49 @@ public class GameNode {
     }
 
     public Iterator<GameNode> getExpansiveChildrenIterator() {
+//        if (children == null)
+//            children = new ArrayList<>();
+//        if (nextStatesGenerator == null)
+//            nextStatesGenerator = baseState.getStatesGenerator(currentColorToMove);
+//
+//        ListIterator<GameNode> existingChildrenIterator = children.listIterator();
+//        return new Iterator<GameNode>() {
+//            private GameNode toReturn = findNext();
+//            private boolean generationPhase = false;
+//            public GameNode findNext(){
+//                if (!generationPhase && existingChildrenIterator.hasNext()){
+//                    return existingChildrenIterator.next();
+//                }
+//                generationPhase = true;
+//
+//                if (nextStatesGenerator.hasNext()) {
+//                    var newChild = new GameNode(
+//                            nextStatesGenerator.next(),
+//                            baseState.getOpposingCode(currentColorToMove),
+//                            nodeType.opposite()
+//                    );
+//                    existingChildrenIterator.add(newChild);
+//                    return newChild;
+//                }
+//
+//                return null;
+//            }
+//
+//            @Override
+//            public boolean hasNext() {
+//                return toReturn != null;
+//            }
+//
+//            @Override
+//            public GameNode next() {
+//                var aux = toReturn;
+//                toReturn = findNext();
+//                return aux;
+//            }
+//        };
         if (children == null)
-            children = new ArrayList<>();
-        if (nextStatesGenerator == null)
-            nextStatesGenerator = baseState.getStatesGenerator(currentColorToMove);
-        return new Iterator<GameNode>() {
-            private GameNode toReturn = findNext();
-            private final Iterator<GameNode> existingChildrenIterator = children.iterator();
-            public GameNode findNext(){
-                if (existingChildrenIterator.hasNext()){
-                    return existingChildrenIterator.next();
-                }
-
-                if (nextStatesGenerator.hasNext()) {
-                    return new GameNode(
-                            nextStatesGenerator.next(),
-                            baseState.getOpposingCode(currentColorToMove),
-                            nodeType.opposite()
-                    );
-                }
-
-                return null;
-            }
-
-            @Override
-            public boolean hasNext() {
-                return toReturn != null;
-            }
-
-            @Override
-            public GameNode next() {
-                var aux = toReturn;
-                toReturn = findNext();
-                return aux;
-            }
-        };
+            expandAllChildren();
+        return children.iterator();
     }
 
     public void expandAllChildren() {
@@ -112,6 +121,7 @@ public class GameNode {
 
         if (finishState != CONTINUE) {
             operationalEvaluation = originalColor == currentColorToMove ? -MAX_EVAL : MAX_EVAL;
+            operationalPredecessor = null;
             return this;
         }
         if (depth == 0) {
@@ -119,14 +129,15 @@ public class GameNode {
                     baseState,
                     currentColorToMove
             );
+            operationalPredecessor = null;
             return this;
         }
 
-        if (this.children == null)
+        if (children == null)
             expandAllChildren();
 
         Comparator<GameNode> nodesComparator = Comparator.comparingDouble(o -> o.operationalEvaluation);
-        return children.stream()
+        GameNode theBestChild = children.stream()
                 .map(child -> child.minMaxEvaluate(evaluator, depth - 1, originalColor, onNodeVisit))
                 .reduce(
                         nodeType == NodeType.MAX ?
@@ -134,6 +145,9 @@ public class GameNode {
                                 : BinaryOperator.minBy(nodesComparator)
                 )
                 .orElseThrow();
+        operationalPredecessor = theBestChild;
+        operationalEvaluation = theBestChild.operationalEvaluation;
+        return this;
     }
 
     public GameNode alphaBetaEvaluate(double alpha, double beta, Evaluator evaluator, int depth, int originalColor, Runnable onNodeVisit) {
@@ -141,6 +155,7 @@ public class GameNode {
 
         if (finishState != CONTINUE) {
             operationalEvaluation = originalColor == currentColorToMove ? -MAX_EVAL : MAX_EVAL;
+            operationalPredecessor = null;
             return this;
         }
         if (depth == 0) {
@@ -148,11 +163,13 @@ public class GameNode {
                     baseState,
                     currentColorToMove
             );
+            operationalPredecessor = null;
             return this;
         }
 
+        Iterator<GameNode> childrenIterator = getExpansiveChildrenIterator();
+
         if (originalColor != currentColorToMove) {
-            Iterator<GameNode> childrenIterator = getExpansiveChildrenIterator();
             GameNode betaNode = null;
             while (childrenIterator.hasNext() && alpha < beta) {
                 var currentChild = childrenIterator.next();
@@ -163,9 +180,9 @@ public class GameNode {
                     betaNode = betaNodeCandidate;
                 }
             }
-            return betaNode;
+            operationalPredecessor = betaNode;
+            return this;
         } else {
-            Iterator<GameNode> childrenIterator = getExpansiveChildrenIterator();
             GameNode alphaNode = null;
             while (childrenIterator.hasNext() && alpha < beta) {
                 var currentChild = childrenIterator.next();
@@ -176,7 +193,12 @@ public class GameNode {
                     alphaNode = alphaNodeCandidate;
                 }
             }
-            return alphaNode;
+            operationalPredecessor = alphaNode;
+            return this;
         }
+    }
+
+    public GameNode getOperationalPredecessor() {
+        return operationalPredecessor;
     }
 }
