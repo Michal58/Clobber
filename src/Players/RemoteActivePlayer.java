@@ -4,8 +4,10 @@ import StateComponents.StateOfClobber;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class RemoteActivePlayer implements Player{
     public static String END_OF_LINE = "!";
@@ -41,42 +43,52 @@ public class RemoteActivePlayer implements Player{
         actualPlayer.initializeGame(pieceColor);
     }
 
-    public void collectMoveFromFileAndClear() throws IOException, InterruptedException {
+    public static void collectMoveFromFileAndClear(String channel, Consumer<StateOfClobber> extractedLineConsumer) throws IOException, InterruptedException {
         List<String> lines = List.of();
+        Path path = Paths.get(channel);
         while (lines.isEmpty() || !lines.get(lines.size() - 1).equals(END_OF_LINE)) {
-            lines = Files.readAllLines(Paths.get(updateChannel));
+            lines = Files.readAllLines(path);
             Thread.sleep(50);
         }
-        this.stateFromUpdate = StateOfClobber.boardFromLine(lines.get(0));
+        extractedLineConsumer.accept(
+                StateOfClobber.boardFromLine(lines.get(0))
+        );
 
         // erase contents of file
-        Files.writeString(Paths.get(updateChannel),"");
+        Files.writeString(path,"");
     }
 
     @Override
     public void updateWithMove(StateOfClobber updatedGameState) {
         try {
-            collectMoveFromFileAndClear();
+            collectMoveFromFileAndClear(
+                    updateChannel,
+                    line->this.stateFromUpdate=line
+            );
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
         actualPlayer.updateWithMove(stateFromUpdate);
     }
 
-    @Override
-    public StateOfClobber makeMove() {
-        StateOfClobber move = actualPlayer.makeMove();
-
-        String firstLine = move.boardToLine();
+    public static void saveState(String channel, StateOfClobber state) {
+        String firstLine = state.boardToLine();
         String secondLine = END_OF_LINE;
         try {
             Files.write(
-                    Paths.get(moveChannel),
+                    Paths.get(channel),
                     List.of(firstLine, secondLine)
             );
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public StateOfClobber makeMove() {
+        StateOfClobber move = actualPlayer.makeMove();
+
+        saveState(moveChannel,move);
 
         return move;
     }

@@ -379,9 +379,6 @@ public class Main {
 
             var game = new GameOfClobber(whitePlayer, blackPlayer, new Dimension(n,m));
             game.conductGame(toIgnore->{
-                System.out.println("----");
-                toIgnore.displayBoard();
-                System.out.println("----");
             });
             game.displayFinishedGameResult();
         }
