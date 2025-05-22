@@ -306,4 +306,45 @@ public class StateOfClobber {
                         Arrays.equals(this.board[i], other.board[i])
                 );
     }
+
+
+    public static final String COL_FILE_SEP = "1";
+    public static final String ROW_FILE_SEP = "2";
+
+    public static int signToColor(String sign){
+        return switch (sign) {
+            case SIGN_WHITE -> WHITE;
+            case SIGN_BLACK -> BLACK;
+            case SIGN_EMPTY -> EMPTY;
+            default -> throw new RuntimeException("Not sign to color founded for: " + sign);
+        };
+    }
+
+    public String boardToLine() {
+        List<String> rowsAsString = new ArrayList<>();
+
+        for (int[] row : board) {
+            String[] symbols = Arrays.stream(row)
+                    .mapToObj(this::getSign)
+                    .toArray(String[]::new);
+            rowsAsString.add(String.join(COL_FILE_SEP, symbols));
+        }
+
+        return String.join(ROW_FILE_SEP, rowsAsString);
+    }
+    public static StateOfClobber boardFromLine(String lineWithBoard) {
+        String[] rows = lineWithBoard.split(ROW_FILE_SEP);
+        int[][] clobberBoard = new int[rows.length][];
+
+        int i=0;
+        for (String row : rows) {
+            String[] elements = row.split(COL_FILE_SEP);
+            clobberBoard[i] = Arrays.stream(elements)
+                    .mapToInt(StateOfClobber::signToColor)
+                    .toArray();
+            i++;
+        }
+
+        return new StateOfClobber(clobberBoard);
+    }
 }

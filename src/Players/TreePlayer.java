@@ -101,7 +101,6 @@ public class TreePlayer implements Player{
         Utils.StopWatch stopWatch = new Utils.StopWatch();
         stopWatch.startTime();
         GameNode maxNode = game.getMaxNode(adaptedEvaluator, baseMaxDepth, onVisit);
-        System.out.println(maxNode.operationalEvaluation);
         stopWatch.stopTime();
         game.updateWithMaxNode(maxNode);
         secondsTimeSearching += stopWatch.getTimeSeconds();

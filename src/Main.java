@@ -1,19 +1,21 @@
 import Evaluations.*;
-import Players.RandomPlayer;
-import Players.StrategyAdaptationHeuristic;
-import Players.TreePlayer;
+import Players.*;
 import StateComponents.GameOfClobber;
 import StateComponents.StateOfClobber;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.Function;
+
+import static StateComponents.StateOfClobber.BLACK;
+import static StateComponents.StateOfClobber.WHITE;
 
 public class Main {
     public static void testStates(){
         StateOfClobber st1 = new StateOfClobber(5, 6);
         System.out.println("Gen first");
-        var states = st1.generateAllPossibleStates(StateOfClobber.WHITE);
+        var states = st1.generateAllPossibleStates(WHITE);
         states.forEach(s-> {
                     s.displayBoard();
                     System.out.println("------");
@@ -76,7 +78,7 @@ public class Main {
 
         CountOfMovesHeuristic heu1 = new CountOfMovesHeuristic();
         System.out.println(heu1.assessState(st1, StateOfClobber.BLACK));
-        System.out.println(heu1.assessState(st1, StateOfClobber.WHITE));
+        System.out.println(heu1.assessState(st1, WHITE));
 
         // is game won
 
@@ -93,7 +95,7 @@ public class Main {
 
         PieceMoveAbilityHeuristic heuristic = new PieceMoveAbilityHeuristic();
         System.out.println(heuristic.assessState(st1, StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1, StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
     }
 
 
@@ -106,35 +108,35 @@ public class Main {
 
         PiecesCountHeuristic heur = new PiecesCountHeuristic();
         System.out.println(heur.assessState(st1, StateOfClobber.BLACK));
-        System.out.println(heur.assessState(st1, StateOfClobber.WHITE));
+        System.out.println(heur.assessState(st1, WHITE));
     }
     public static void testIsolationAdvantageHeuristic() {
         StateOfClobber st1 = performMoveSequence1();
 
         IsolationAdvantageHeuristic heuristic = new IsolationAdvantageHeuristic();
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
     }
 
     public static void testDoublingHeuristic() {
         StateOfClobber st1 = performMoveSequence2();
         DoublingPositionHeuristic heuristic = new DoublingPositionHeuristic();
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
     }
 
     public static void testCentralityHeuristic() {
         StateOfClobber st1 = performMoveSequence2();
         CentralityHeuristic heuristic = new CentralityHeuristic();
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
     }
 
     public static void testWeightedMovesCountHeuristic() {
         StateOfClobber st1 = performMoveSequence2();
         WeightedCountOfMovesHeuristic heuristic = new WeightedCountOfMovesHeuristic();
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
     }
 
     public static void testStateIterator() {
@@ -180,22 +182,22 @@ public class Main {
         System.out.println("Ability");
         Evaluator heuristic = new PieceMoveAbilityHeuristic();
         System.out.println(heuristic.assessState(st1, StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1, StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
 
         System.out.println("Isolation");
         heuristic = new IsolationAdvantageHeuristic();
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
 
         System.out.println("Doubling");
         heuristic = new DoublingPositionHeuristic();
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
 
         System.out.println("Centrality");
         heuristic = new CentralityHeuristic();
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
 
         System.out.println("Complex");
         heuristic = new TunableComplexHeuristic(
@@ -206,7 +208,7 @@ public class Main {
                 0.25
         );
         System.out.println(heuristic.assessState(st1,StateOfClobber.BLACK));
-        System.out.println(heuristic.assessState(st1,StateOfClobber.WHITE));
+        System.out.println(heuristic.assessState(st1, WHITE));
     }
 
 
@@ -223,7 +225,7 @@ public class Main {
     }
 
     public static void conductMinMaxGame() {
-        int depth = 3;
+        int depth = 4;
         var p1 = new TreePlayer(depth, TreePlayer.TreeType.MIN_MAX, TreePlayer.selectedStrategyAdaptation(0));
         var p2 = new TreePlayer(depth, TreePlayer.TreeType.MIN_MAX, TreePlayer.selectedStrategyAdaptation(0));
         GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
@@ -236,7 +238,7 @@ public class Main {
     }
 
     public static void conductAlphaBetaGame() {
-        int depth = 3;
+        int depth = 6;
         var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(0));
         var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(0));
         GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
@@ -328,10 +330,60 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        try {
-            arrangeHeuristicComparison();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        // if no arguments - then perform benchmarks
+        if (args.length == 0) {
+            try {
+                arrangeHeuristicComparison();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (args.length == 1) {
+            System.out.println("Min max game");
+            conductMinMaxGame();
+            System.out.println("Alpha beta game");
+            conductAlphaBetaGame();
+        }
+        else {
+            int n = Integer.parseInt(args[0].trim());
+            int m = Integer.parseInt(args[1].trim());
+            int heuristicChoice = Integer.parseInt(args[2]);
+            Function<Evaluator[], StrategyAdaptation> heuristic = switch (heuristicChoice) {
+                case 0,1,2->TreePlayer.selectedStrategyAdaptation(heuristicChoice);
+                default -> _toIgnore->new StrategyAdaptationHeuristic();
+            };
+            int maxDepth = Integer.parseInt(args[3].trim());
+            int color = Integer.parseInt(args[4].trim());
+            if (color != WHITE && color != StateOfClobber.BLACK)
+                throw new RuntimeException("Color should be either 1 or 2");
+            String updateChannelActive = args[5];
+            String moveChannelActive = args[6];
+            String updateChannelPassive = args[7];
+            String moveChannelPassive = args[8];
+
+            Player passivePlayer = new RemotePassivePlayer(
+                    updateChannelPassive,
+                    moveChannelPassive
+            );
+            Player activePlayer = new RemoteActivePlayer(
+                    updateChannelActive,
+                    moveChannelActive,
+                    new TreePlayer(
+                        maxDepth,
+                        TreePlayer.TreeType.ALPHA_BETA,
+                        heuristic
+                    )
+            );
+
+            Player whitePlayer = color == WHITE ?  activePlayer : passivePlayer;
+            Player blackPlayer = color == BLACK ? activePlayer : passivePlayer;
+
+            var game = new GameOfClobber(whitePlayer, blackPlayer, new Dimension(n,m));
+            game.conductGame(toIgnore->{
+                System.out.println("----");
+                toIgnore.displayBoard();
+                System.out.println("----");
+            });
+            game.displayFinishedGameResult();
         }
     }
 }
