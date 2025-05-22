@@ -56,52 +56,6 @@ public class GameNode {
         return Optional.ofNullable(currentChild);
     }
 
-    public Iterator<GameNode> getExpansiveChildrenIterator() {
-//        if (children == null)
-//            children = new ArrayList<>();
-//        if (nextStatesGenerator == null)
-//            nextStatesGenerator = baseState.getStatesGenerator(currentColorToMove);
-//
-//        ListIterator<GameNode> existingChildrenIterator = children.listIterator();
-//        return new Iterator<GameNode>() {
-//            private GameNode toReturn = findNext();
-//            private boolean generationPhase = false;
-//            public GameNode findNext(){
-//                if (!generationPhase && existingChildrenIterator.hasNext()){
-//                    return existingChildrenIterator.next();
-//                }
-//                generationPhase = true;
-//
-//                if (nextStatesGenerator.hasNext()) {
-//                    var newChild = new GameNode(
-//                            nextStatesGenerator.next(),
-//                            baseState.getOpposingCode(currentColorToMove),
-//                            nodeType.opposite()
-//                    );
-//                    existingChildrenIterator.add(newChild);
-//                    return newChild;
-//                }
-//
-//                return null;
-//            }
-//
-//            @Override
-//            public boolean hasNext() {
-//                return toReturn != null;
-//            }
-//
-//            @Override
-//            public GameNode next() {
-//                var aux = toReturn;
-//                toReturn = findNext();
-//                return aux;
-//            }
-//        };
-        if (children == null)
-            expandAllChildren();
-        return children.iterator();
-    }
-
     public void expandAllChildren() {
         int oppositeColor = baseState.getOpposingCode(currentColorToMove);
         this.children = baseState.generateAllPossibleStates(currentColorToMove)
@@ -167,7 +121,6 @@ public class GameNode {
             return this;
         }
 
-//        Iterator<GameNode> childrenIterator = getExpansiveChildrenIterator();
         if (children == null)
             expandAllChildren();
         Iterator<GameNode> childrenIterator = children.iterator();

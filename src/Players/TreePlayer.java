@@ -7,9 +7,6 @@ import StateComponents.StateOfClobber;
 import Utils.Utils;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
-
-import static StateComponents.StateOfClobber.EMPTY;
 import static StateComponents.StateOfClobber.INVALID_COLOR;
 
 public class TreePlayer implements Player{

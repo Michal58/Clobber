@@ -328,31 +328,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-//        StateComponents.StateOfClobber st1 = new StateComponents.StateOfClobber(5,6);
-//        StateComponents.StateOfClobber st2 = st1.copy();
-//        System.out.println("----");
-//        System.out.println(st1);
-//        System.out.println(st2);
-//
-//        st2.displayBoard();
-//
-//        StateComponents.GameOfClobber cl = new StateComponents.GameOfClobber(new DummyPlayer(), new DummyPlayer(), new Dimension(6,5));
-//        cl.displayFinishedGameResult();
-
-//        testStates();
-//        testPossibleMovesHeuristics();
-//        testPieceMoveAbilityHeuristic();
-//        testPiecesCountHeuristic();
-//        testIsolationAdvantageHeuristic();
-//        testDoublingHeuristic();
-//        testCentralityHeuristic();
-//        testWeightedMovesCountHeuristic();
-//        testComplexHeuristic();
-//        testStateIterator();
-//        conductRandomGame();
-//        conductMinMaxGame();
-//        conductAlphaBetaGame();
-
         try {
             arrangeHeuristicComparison();
         } catch (InterruptedException e) {

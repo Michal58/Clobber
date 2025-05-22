@@ -3,7 +3,6 @@ package Players;
 import Evaluations.Evaluator;
 import StateComponents.StateOfClobber;
 
-import java.util.Optional;
 
 import static Evaluations.Evaluator.MAX_EVAL;
 

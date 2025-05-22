@@ -7,24 +7,6 @@ import StateComponents.StateOfClobber;
 import java.util.stream.IntStream;
 
 public class StrategyAdaptationHeuristic implements StrategyAdaptation {
-
-//    public static final double[][] BASE_WEIGHTS = {
-//            {5, 5},
-//            {0.2, 0.8},
-//            {2, 8},
-//            {0.05, 0.15},
-//            {0.25, 9.75}
-//    };
-
-//    public static final double[][] BASE_WEIGHTS = {
-//            {5, 5},
-//            {-0.2, -0.8},
-//            {2, 0.05},
-//            {-0.1, -0.15},
-//            {-3.25, -9.75}
-//    };
-
-
     public static final double[][] BASE_WEIGHTS = {
             {5, 5},
             {-0.2, -0.8},

@@ -112,13 +112,6 @@ public class StateOfClobber {
         return hasPieceAnyMove(rowIndex, colIndex, getOpposingCode(pieceCode));
     }
 
-//    private final List<TriPredicate<Integer,Integer,Integer>> ALL_MOVES_PREDICATES = List.of(
-//            this::canPieceMoveRight,
-//            this::canPieceMoveLeft,
-//            this::canPieceMoveDown,
-//            this::canPieceMoveUp
-//    );
-
     public boolean isThereRightPieceTake(int rowPos, int colPos, int colorToTake) {
         return canPieceMoveRight(rowPos, colPos, colorToTake) && board[rowPos][colPos + 1] == colorToTake;
     }
