@@ -8,12 +8,29 @@ import java.util.stream.IntStream;
 
 public class StrategyAdaptationHeuristic implements StrategyAdaptation {
 
+//    public static final double[][] BASE_WEIGHTS = {
+//            {5, 5},
+//            {0.2, 0.8},
+//            {2, 8},
+//            {0.05, 0.15},
+//            {0.25, 9.75}
+//    };
+
+//    public static final double[][] BASE_WEIGHTS = {
+//            {5, 5},
+//            {-0.2, -0.8},
+//            {2, 0.05},
+//            {-0.1, -0.15},
+//            {-3.25, -9.75}
+//    };
+
+
     public static final double[][] BASE_WEIGHTS = {
             {5, 5},
-            {0.2, 0.8},
-            {2, 8},
-            {0.05, 0.15},
-            {0.25, 9.75}
+            {-0.2, -0.8},
+            {2, 0.05},
+            {0.1, 0.15},
+            {-3.25, -9.75}
     };
 
 
@@ -85,6 +102,13 @@ public class StrategyAdaptationHeuristic implements StrategyAdaptation {
         this.adaptationMetaWeights = new double[] {
                 DEFAULT_ADAPTATION_WEIGHT_1,
                 DEFAULT_ADAPTATION_WEIGHT_2
+        };
+    }
+
+    public StrategyAdaptationHeuristic(double weight1, double weight2) {
+        this.adaptationMetaWeights = new double[] {
+                weight1,
+                weight2
         };
     }
 

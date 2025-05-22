@@ -6,8 +6,8 @@ import StateComponents.GameOfClobber;
 import StateComponents.StateOfClobber;
 
 import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 
 public class Main {
     public static void testStates(){
@@ -223,7 +223,7 @@ public class Main {
     }
 
     public static void conductMinMaxGame() {
-        int depth = 2;
+        int depth = 3;
         var p1 = new TreePlayer(depth, TreePlayer.TreeType.MIN_MAX, TreePlayer.selectedStrategyAdaptation(0));
         var p2 = new TreePlayer(depth, TreePlayer.TreeType.MIN_MAX, TreePlayer.selectedStrategyAdaptation(0));
         GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
@@ -236,7 +236,7 @@ public class Main {
     }
 
     public static void conductAlphaBetaGame() {
-        int depth = 7;
+        int depth = 3;
         var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(0));
         var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(0));
         GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
@@ -249,8 +249,82 @@ public class Main {
     }
 
 
-    public static void arrangeHeuristicComparison() {
+    public static void arrangeHeuristicComparison() throws InterruptedException{
+        Map<Integer,String> heurMap = Map.of(
+                0,"Only weighted moves",
+                1,"Tuned heuristic",
+                2,"End game tune"
+        );
 
+        // same heuristics comparison
+        for (int i = 0; i < 3; i++) {
+            int depth = 4;
+            var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(i));
+            var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(i));
+            GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
+            game.conductGame(st-> {
+            });
+            System.out.println("Two players same heuristic " + heurMap.get(i));
+            game.displayFinishedGameResult();
+            Thread.sleep(1000);
+        }
+
+        System.out.println("-".repeat(50) + "Adaptation phase as black");
+        for (int i = 0; i < 3; i++) {
+            int depth = 4;
+
+            var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(i));
+            var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.realStrategyAdaptationGetter());
+            GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
+            game.conductGame(st-> {
+            });
+            System.out.println("White player " + heurMap.get(i));
+            game.displayFinishedGameResult();
+            Thread.sleep(1000);
+        }
+
+        System.out.println("-".repeat(50) + "End game tuned heuristic contest with others and itself (as white)");
+        for (int i = 0; i < 3; i++) {
+            int depth = 4;
+
+            var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(2));
+            var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(i));
+            GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5, 6));
+            game.conductGame(st -> {
+            });
+            game.displayFinishedGameResult();
+            System.out.println("Enemy as: " + heurMap.get(i));
+            Thread.sleep(1000);
+        }
+
+
+        System.out.println("-".repeat(50) + "Adaptation phase as white");
+        for (int i = 0; i < 3; i++) {
+            int depth = 4;
+
+            var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.selectedStrategyAdaptation(i));
+            var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, TreePlayer.realStrategyAdaptationGetter());
+            GameOfClobber game = new GameOfClobber(p2, p1, new Dimension(5,6));
+            game.conductGame(st-> {
+            });
+            System.out.println("White player " + heurMap.get(i));
+            game.displayFinishedGameResult();
+            Thread.sleep(1000);
+        }
+
+        System.out.println("-".repeat(50) + "Two adaptations contest");
+
+        int depth = 4;
+
+        var p1 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, _toIgnore->new StrategyAdaptationHeuristic(0.25,0.75));
+        var p2 = new TreePlayer(depth, TreePlayer.TreeType.ALPHA_BETA, _toIgnore->new StrategyAdaptationHeuristic(0.75,0.25));
+        GameOfClobber game = new GameOfClobber(p1, p2, new Dimension(5,6));
+        game.conductGame(st-> {
+        });
+        System.out.println("Black player: move ability focus");
+        System.out.println("White player: move focus");
+        game.displayFinishedGameResult();
+        Thread.sleep(1000);
     }
 
     public static void main(String[] args) {
@@ -276,7 +350,13 @@ public class Main {
 //        testComplexHeuristic();
 //        testStateIterator();
 //        conductRandomGame();
-        conductMinMaxGame();
-        conductAlphaBetaGame();
+//        conductMinMaxGame();
+//        conductAlphaBetaGame();
+
+        try {
+            arrangeHeuristicComparison();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
