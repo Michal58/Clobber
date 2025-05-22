@@ -36,4 +36,11 @@ public class Utils {
             return getTimeNano() / Math.pow(10, 9);
         }
     }
+
+    public static class Wrap<T> {
+        public T value;
+        public Wrap(T value) {
+            this.value = value;
+        }
+    }
 }

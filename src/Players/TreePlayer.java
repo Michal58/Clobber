@@ -4,10 +4,13 @@ import Evaluations.Evaluator;
 import Evaluations.TunableComplexHeuristic;
 import Evaluations.WeightedCountOfMovesHeuristic;
 import StateComponents.StateOfClobber;
+import Utils.Utils;
+
+import java.util.function.Supplier;
 
 import static StateComponents.StateOfClobber.INVALID_COLOR;
 
-public class MinMaxPlayer implements Player{
+public class TreePlayer implements Player{
     public final Evaluator ONLY_WEIGHTED_MOVES_HEURISTIC = new WeightedCountOfMovesHeuristic(
             0,
             1.5,
@@ -32,16 +35,25 @@ public class MinMaxPlayer implements Player{
     );
 
     private long countOfVisitedNodes;
-    private long nanoTimeSearching;
+    private double secondsTimeSearching;
     private int pieceColor;
     private int baseMaxDepth;
-    private TreeMinMax game;
+    private GameTree game;
+    private StrategyAdaptationHeuristic heuristicAdapter;
+    private TreeType treeType;
 
-    public MinMaxPlayer(int baseMaxDepth){
+    public enum TreeType {
+        MIN_MAX,
+        ALPHA_BETA
+    }
+
+    public TreePlayer(int baseMaxDepth, TreeType treeType){
         this.countOfVisitedNodes = 0;
-        this.nanoTimeSearching = 0;
+        this.secondsTimeSearching = 0;
         this.pieceColor = INVALID_COLOR;
         this.baseMaxDepth = baseMaxDepth;
+        this.heuristicAdapter = new StrategyAdaptationHeuristic();
+        this.treeType = treeType;
     }
 
     @Override
@@ -51,7 +63,7 @@ public class MinMaxPlayer implements Player{
 
     @Override
     public double secondsTimeOfSearching() {
-        return nanoTimeSearching / Math.pow(10,9);
+        return secondsTimeSearching / Math.pow(10,9);
     }
 
     @Override
@@ -62,16 +74,26 @@ public class MinMaxPlayer implements Player{
     @Override
     public void updateWithMove(StateOfClobber updatedGameState) {
         if (this.game == null)
-            this.game = new TreeMinMax(updatedGameState, this.pieceColor);
+            this.game = switch (this.treeType) {
+                case MIN_MAX -> new TreeMinMax(updatedGameState, this.pieceColor);
+                case ALPHA_BETA -> null;
+            };
         else
             this.game.updateEnemyMove(updatedGameState);
     }
 
     @Override
     public StateOfClobber makeMove() {
-        long start = System.nanoTime();
-        this.game.setMaxNodeAsRoot(baseMaxDepth);
-        nanoTimeSearching += (System.nanoTime() - start);
-        return this.game.getRoot().getBaseState().copy();
+        Utils.Wrap<Integer> visitedNodes = new Utils.Wrap<>(0);
+        Runnable onVisit = () -> visitedNodes.value++;
+        Evaluator adaptedEvaluator = heuristicAdapter.getAdaptedHeuristic(game.getRoot().getBaseState());
+        Utils.StopWatch stopWatch = new Utils.StopWatch();
+        stopWatch.startTime();
+        GameNode maxNode = game.getMaxNode(adaptedEvaluator, baseMaxDepth, onVisit);
+        stopWatch.stopTime();
+        game.updateWithMaxNode(maxNode);
+        secondsTimeSearching += stopWatch.getTimeSeconds();
+        countOfVisitedNodes += visitedNodes.value;
+        return game.getRoot().getBaseState().copy();
     }
 }

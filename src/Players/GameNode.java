@@ -3,9 +3,17 @@ package Players;
 import Evaluations.Evaluator;
 import StateComponents.StateOfClobber;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
+
+import static Evaluations.Evaluator.MAX_EVAL;
+import static StateComponents.StateOfClobber.CONTINUE;
 
 public class GameNode {
     public enum NodeType {
@@ -21,7 +29,8 @@ public class GameNode {
     List<GameNode> children;
     NodeType nodeType;
     int currentColorToMove;
-    double evaluationValue;
+    boolean isFinished;
+    private double operationalEvaluation;
 
 
     public GameNode(StateOfClobber baseState, int currentColorToMove, NodeType nodeType) {
@@ -50,10 +59,6 @@ public class GameNode {
         return Optional.ofNullable(currentChild);
     }
 
-    public void assignEvaluation(double evaluationValue) {
-        this.evaluationValue = evaluationValue;
-    }
-
     public void expand() {
         int oppositeColor = baseState.getOpposingCode(currentColorToMove);
         baseState.generateAllPossibleStates(currentColorToMove).forEach(state ->
@@ -61,10 +66,6 @@ public class GameNode {
                         new GameNode(state, oppositeColor, nodeType.opposite())
                 )
         );
-    }
-
-    public void removeChildren(){
-        this.children = null;
     }
 
     public void expandAllChildren() {
@@ -77,20 +78,37 @@ public class GameNode {
                 .toList();
     }
 
-    public double evaluate(Evaluator evaluator, int depth){
+    public List<GameNode> getChildren() {
+        return this.children;
+    }
+
+    public GameNode minMaxEvaluate(Evaluator evaluator, int depth, int originalColor, Runnable onNodeVisit){
+        onNodeVisit.run();
+
+        if (isFinished || baseState.whatIsGameState(currentColorToMove) != CONTINUE) {
+            isFinished = true;
+            operationalEvaluation = originalColor == currentColorToMove ? -MAX_EVAL : MAX_EVAL;
+            return this;
+        }
         if (depth == 0) {
-//            this.evaluationValue = evaluator.assessState();
+            operationalEvaluation = evaluator.assessState(
+                    baseState,
+                    currentColorToMove
+            );
+            return this;
         }
 
         if (this.children == null)
             expandAllChildren();
 
-        children.forEach(child->child.evaluate(evaluator,depth-1));
-
-        if (nodeType == NodeType.MAX) {
-
-        }
-
-        return 0.456789;
+        Comparator<GameNode> nodesComparator = Comparator.comparingDouble(o -> o.operationalEvaluation);
+        return children.stream()
+                .map(child -> child.minMaxEvaluate(evaluator, depth - 1, originalColor, onNodeVisit))
+                .reduce(
+                        nodeType == NodeType.MAX ?
+                                BinaryOperator.maxBy(nodesComparator)
+                                : BinaryOperator.minBy(nodesComparator)
+                )
+                .orElseThrow();
     }
 }

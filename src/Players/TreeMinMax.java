@@ -4,20 +4,15 @@ import Evaluations.Evaluator;
 import StateComponents.StateOfClobber;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class TreeMinMax {
+public class TreeMinMax implements GameTree{
     private GameNode root;
-    private int ourPlayerColor;
-    private Evaluator currentEvaluator;
+    private final int ourPlayerColor;
 
     public TreeMinMax(StateOfClobber startState, int ourPlayerColor) {
         this.ourPlayerColor = ourPlayerColor;
         this.root = new GameNode(startState, ourPlayerColor, GameNode.NodeType.MAX);
-    }
-
-    public void changeEvaluator(Evaluator evaluator) {
-        this.currentEvaluator = evaluator;
-        this.root.removeChildren();
     }
 
     public GameNode.NodeType getNodeType(int nodeColorToMove) {
@@ -27,10 +22,12 @@ public class TreeMinMax {
             return GameNode.NodeType.MIN;
     }
 
+    @Override
     public GameNode getRoot() {
         return this.root;
     }
 
+    @Override
     public void updateEnemyMove(StateOfClobber updatedState) {
         if (root.getBaseState().isSameAs(updatedState))
             throw new RuntimeException("Updated state is not changed");
@@ -41,19 +38,13 @@ public class TreeMinMax {
         this.root = nextState.get();
     }
 
-    public void setMaxNodeAsRoot(int depth) {
-        GameNode currentNode = root;
-        int currentLevel = 0;
+    @Override
+    public GameNode getMaxNode(Evaluator evaluator, int depth, Runnable onNodeVisit){
+        return this.root.minMaxEvaluate(evaluator, depth, this.ourPlayerColor, onNodeVisit);
+    }
 
-        while (currentLevel <= depth) {
-            if (currentNode.children == null) {
-                currentNode.expandAllChildren();
-            }
-            if (currentLevel == depth) {
-
-            }
-        }
-
-//        this.root = root.getMaxChildren(currentEvaluator, depth);
+    @Override
+    public void setRootHard(GameNode newRoot) {
+        this.root = newRoot;
     }
 }
